@@ -93,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Load data and read CSV
     let mut df = DataFrame::new();
     let types = vec![1, 1, 2];  
-    df.read_csv("Newest.csv", &types)?; 
+    df.read_csv("airport.csv", &types)?; 
     
 
     // Build the graph
