@@ -1,0 +1,92 @@
+use 
+
+#[derive(Debug, Clone)]
+enum ColumnVal {
+    One(String),
+    Two(bool),
+    Three(f64),
+    Four(i64),
+}
+
+#[derive(Debug)]
+struct DataFrame {
+    label: Vec<String>, 
+    columns: Vec<Vec<ColumnVal>>, 
+    types: Vec<u32> //put number these will represent every columns for one two three and four 
+}
+
+// For returning errors
+#[derive(Debug)]
+struct MyError(String);
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "There is an error: {}", self.0)
+    }
+}
+impl Error for MyError {}
+
+impl DataFrame {
+    fn new() -> Self {
+        let types: Vec<u32> = Vec::new();
+        let label: Vec<String> = Vec::new();
+        let columns: Vec<Vec<ColumnVal>> = Vec::new(); 
+        DataFrame {
+            label,
+            columns,
+            types
+        }
+
+    }
+
+    fn read_csv(&mut self, path: &str, types: &Vec<u32>) -> Result<(), Box<dyn Error>> {
+        self.types = types.clone(); 
+        let mut rdr = csv::ReaderBuilder::new()
+            .delimiter(b',')
+            .has_headers(false)
+            .flexible(true)
+            .from_path(path)?;
+        let mut first_row = true;
+        for result in rdr.records() {
+            // Notice that we need to provide a type hint for automatic
+            // deserialization.
+            let r = result.unwrap();
+            let mut row: Vec<ColumnVal> = vec![];
+            if first_row {
+                for elem in r.iter() {
+                    self.label.push(elem.to_string());
+                }
+                println!("Labels: {:?}", self.label);
+                first_row = false;
+                continue;
+            }
+            for (i, elem) in r.iter().enumerate() {
+                match types[i] {
+                    1 => {
+                        println!("1 {}", elem);
+                        row.push(ColumnVal::One(elem.to_string()));
+                    },
+                    2 => {
+                        println!("2 {}", elem);
+                        row.push(ColumnVal::Two(elem.parse::<bool>().unwrap()));
+                    },
+                    3 => {
+                        println!("3 {}", elem);
+                        row.push(ColumnVal::Three(elem.parse::<f64>().unwrap()));
+                    },
+                    4 => {
+                        println!("4 {}", elem);
+                        row.push(ColumnVal::Four(elem.parse::<i64>().unwrap()));
+                    },
+                    _ => return Err(Box::new(MyError("Unknown type".to_string()))),
+                }
+            }
+            self.columns.push(row); 
+        }
+        Ok(())
+    }
+}
+
+fn main() {
+   
+}
